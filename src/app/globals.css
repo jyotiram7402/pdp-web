@@ -1,0 +1,326 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -------------------------------------------------------------------------- */
+/* Design tokens. Re-skin the whole site by editing these values.            */
+/* -------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.2 0.012 262);
+  --card: oklch(1 0 0);
+  --muted: oklch(0.966 0.004 262);
+  --muted-foreground: oklch(0.52 0.016 262);
+  --subtle: oklch(0.985 0.002 262);
+  --border: oklch(0.915 0.006 262);
+  --input: oklch(0.87 0.008 262);
+  --ring: oklch(0.56 0.2 263);
+  --primary: oklch(0.52 0.2 263);
+  --primary-foreground: oklch(0.99 0.004 262);
+  --primary-soft: oklch(0.955 0.03 263);
+  --success: oklch(0.62 0.15 152);
+  --warning: oklch(0.74 0.15 72);
+  --danger: oklch(0.58 0.21 26);
+  --image: oklch(0.968 0.003 262);
+  --header-height: 64px;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.165 0.008 264);
+  --foreground: oklch(0.95 0.005 264);
+  --card: oklch(0.2 0.01 264);
+  --muted: oklch(0.245 0.011 264);
+  --muted-foreground: oklch(0.71 0.014 264);
+  --subtle: oklch(0.185 0.009 264);
+  --border: oklch(0.29 0.012 264);
+  --input: oklch(0.36 0.014 264);
+  --ring: oklch(0.68 0.17 263);
+  --primary: oklch(0.67 0.17 263);
+  --primary-foreground: oklch(0.16 0.02 264);
+  --primary-soft: oklch(0.3 0.06 263);
+  --success: oklch(0.7 0.15 152);
+  --warning: oklch(0.8 0.14 75);
+  --danger: oklch(0.68 0.19 26);
+  /* Product photos have white backgrounds: keep their wells light in dark mode. */
+  --image: oklch(0.93 0.004 262);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-image: var(--image);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Base                                                                        */
+/* -------------------------------------------------------------------------- */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Lock page scroll behind modals; the padding (set by <Dialog>) prevents a layout shift. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+    padding-right: var(--scrollbar-width, 0px);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 22%, transparent);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scroll-shadow-x {
+  mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Dialogs (native <dialog>)                                                   */
+/* -------------------------------------------------------------------------- */
+.dialog {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+}
+.dialog::backdrop {
+  background: oklch(0.16 0.01 262 / 0.42);
+  backdrop-filter: blur(6px);
+}
+.dialog[open]::backdrop {
+  animation: fade-in 200ms ease-out;
+}
+.dialog-center {
+  margin: auto;
+  width: min(calc(100% - 2rem), var(--dialog-width, 40rem));
+  max-height: calc(100dvh - 2rem);
+}
+.dialog-center[open] {
+  animation: dialog-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dialog-top {
+  margin: min(12vh, 7rem) auto auto;
+  width: min(calc(100% - 1.5rem), var(--dialog-width, 42rem));
+  max-height: calc(100dvh - min(12vh, 7rem) - 1rem);
+}
+.dialog-top[open] {
+  animation: dialog-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dialog-right {
+  margin: 0 0 0 auto;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(100%, var(--dialog-width, 28rem));
+}
+.dialog-right[open] {
+  animation: slide-in-right 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dialog-left {
+  margin: 0 auto 0 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: min(100%, var(--dialog-width, 24rem));
+}
+.dialog-left[open] {
+  animation: slide-in-left 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Dual range slider                                                           */
+/* -------------------------------------------------------------------------- */
+.range-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.range-input::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 100%;
+}
+.range-input::-moz-range-track {
+  background: transparent;
+}
+.range-input::-webkit-slider-thumb {
+  appearance: none;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border-radius: 9999px;
+  background: var(--background);
+  border: 2px solid var(--primary);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.18);
+  cursor: grab;
+  transition: transform 120ms ease;
+}
+.range-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--background);
+  border: 2px solid var(--primary);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.18);
+  cursor: grab;
+}
+.range-input:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+  cursor: grabbing;
+}
+.range-input:focus-visible {
+  outline: none;
+}
+.range-input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Motion                                                                      */
+/* -------------------------------------------------------------------------- */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.animate-rise {
+  animation: rise-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-fade {
+  animation: fade-in 300ms ease-out both;
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, color-mix(in oklab, var(--muted) 55%, var(--background)) 37%, var(--muted) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+/* Hover zoom on gallery images follows the pointer (set by JS). */
+.zoom-stage img {
+  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+  transition: transform 180ms ease-out;
+}
+.zoom-stage[data-zoom="on"] img {
+  transform: scale(2.1);
+}
+
+/* Subtle engineering grid used in hero areas. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
