@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ProductView } from "@/components/product/product-view";
 import { getProductPageData } from "@/lib/catalog-core";
 import { getCatalog } from "@/lib/data";
+import { pageMetadata } from "@/lib/metadata";
 import { productHref } from "@/lib/product";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -17,18 +18,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getCatalog().bySlug.get(slug);
   if (!product) return {};
-  return {
+  return pageMetadata({
     title: `${product.sku} · ${product.name}`,
     description: product.title,
-    alternates: { canonical: productHref(product.slug) },
-    openGraph: {
-      type: "website",
-      title: `${product.sku} — ${product.name}`,
-      description: product.title,
-      url: productHref(product.slug),
-      images: product.images.slice(0, 1).map((image) => ({ url: image.src, alt: image.alt })),
-    },
-  };
+    path: productHref(product.slug),
+    ogTitle: `${product.sku} — ${product.name}`,
+    images: product.images.slice(0, 1).map((image) => ({ url: image.src, alt: image.alt })),
+  });
 }
 
 export default async function ProductPage({ params }: Props) {

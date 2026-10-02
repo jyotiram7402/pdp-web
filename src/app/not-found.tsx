@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRightIcon, SearchIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/primitives";
+
+export const metadata: Metadata = {
+  title: "Page not found",
+};
 
 export default function NotFound() {
   return (

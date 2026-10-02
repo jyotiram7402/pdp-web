@@ -1,7 +1,7 @@
 import type { CardProduct, CategoryMeta, Product, ProductVideo, StockStatus } from "./types";
 import type { SearchIndex } from "./search";
 import { VARIANT_SPECS } from "@/config/facets";
-import { formatRange, gripRange, productHref, toCard } from "./product";
+import { formatRange, gripRange, productHref, searchKeywords, toCard } from "./product";
 import { collator, slugify, specValue } from "./utils";
 
 export interface CategoryNode {
@@ -251,6 +251,7 @@ export function buildSearchIndex(catalog: Catalog): SearchIndex {
       price: p.price,
       stock: p.stock.status,
       accessory: p.accessoryType,
+      keywords: searchKeywords(p),
     })),
     categories: Array.from(catalog.nodes.values()).map((n) => ({
       name: n.name,

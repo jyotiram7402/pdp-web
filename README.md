@@ -5,7 +5,7 @@ A fast, premium product-catalog website: faceted listing pages, rich product pag
 Built with **Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4**. No database —
 all product data is read from JSON files at build time and every page is pre-rendered.
 
-> The brand name **Meridian** is a neutral placeholder. Change it in `src/config/site.ts`.
+> Site name: **ExpertPDP**. Change it (and contact details) in `src/config/site.ts`; the logo mark is in `src/components/layout/logo.tsx` and `src/app/icon.svg`.
 
 ---
 
@@ -75,7 +75,8 @@ Optional environment variables (see `.env.example`):
 - Recently viewed, JSON-LD structured data (Product + Breadcrumb).
 
 ### Also
-- **Search palette** (Ctrl/⌘ + K or `/`): part numbers, families and categories, keyboard navigation.
+- **Search palette** (Ctrl/⌘ + K or `/`): part numbers, families, categories and spec values
+  (material, finish, IP rating, certifications …), keyboard navigation. "IP66", "IP 66" and "ip-66" all match.
 - **Cart** (drawer + page, CSV export), **quote list** with request form, **compare** up to 4 parts.
   Cart, quote, compare and history are stored in the visitor’s browser (no backend needed).
 - Light/dark theme, mega menu, mobile navigation, sitemap.xml, robots.txt, 404/error pages.
@@ -101,7 +102,7 @@ src/
 ## Customizing
 - **Brand**: `src/config/site.ts` (name, tagline, contact) and `src/components/layout/logo.tsx` (logo mark).
 - **Colors / theme**: the tokens at the top of `src/app/globals.css` (light and dark).
-- **Filters**: `src/config/facets.ts`.
+- **Filters**: `src/config/facets.ts`. The same file lists which specs are searchable (`SEARCH_SPECS`).
 
 ## Data
 The current data is a **test sample of 324 compression latches and accessories** taken from

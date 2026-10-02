@@ -85,16 +85,24 @@ function Hero({ data }: { data: HomeData }) {
               </span>
             </Link>
             {b && (
-              <div className="absolute -left-2 top-[6%] w-[34%] rotate-[-6deg] rounded-3xl border bg-card p-2 shadow-[0_30px_60px_-30px_rgb(15_23_42/0.5)] lg:-left-8">
+              <Link
+                href={productHref(b.slug)}
+                tabIndex={-1}
+                className="absolute -left-2 top-[6%] w-[34%] rotate-[-6deg] rounded-3xl border bg-card p-2 shadow-[0_30px_60px_-30px_rgb(15_23_42/0.5)] transition-transform duration-500 hover:-translate-y-1 lg:-left-8"
+              >
                 <ProductImage src={b.image} alt="" sizes="190px" className="aspect-square rounded-2xl" imageClassName="p-3" />
                 <p className="px-1.5 pb-1 pt-2 font-mono text-xs font-semibold text-foreground">{b.sku}</p>
-              </div>
+              </Link>
             )}
             {c && (
-              <div className="absolute -right-2 bottom-[4%] w-[36%] rotate-[5deg] rounded-3xl border bg-card p-2 shadow-[0_30px_60px_-30px_rgb(15_23_42/0.5)] lg:-right-6">
+              <Link
+                href={productHref(c.slug)}
+                tabIndex={-1}
+                className="absolute -right-2 bottom-[4%] w-[36%] rotate-[5deg] rounded-3xl border bg-card p-2 shadow-[0_30px_60px_-30px_rgb(15_23_42/0.5)] transition-transform duration-500 hover:-translate-y-1 lg:-right-6"
+              >
                 <ProductImage src={c.image} alt="" sizes="200px" className="aspect-square rounded-2xl" imageClassName="p-3" />
                 <p className="px-1.5 pb-1 pt-2 font-mono text-xs font-semibold text-foreground">{c.sku}</p>
-              </div>
+              </Link>
             )}
             <div className="absolute right-[4%] top-[10%] rounded-2xl border bg-background/90 p-3 shadow-lg backdrop-blur">
               <p className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">

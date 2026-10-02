@@ -1,6 +1,6 @@
 import type { CatalogIndex, FacetCell, FacetMeta, IndexItem } from "./facets";
-import { matchTokens, skuScore, tokenize } from "./search";
-import { collator, compactKey } from "./utils";
+import { haystack, matchTokens, relevance, tokenize, type Haystack } from "./search";
+import { collator } from "./utils";
 
 export type SortKey =
   | "featured"
@@ -127,14 +127,14 @@ export interface FilterResult {
 
 export const HISTOGRAM_BINS = 24;
 
-const textCache = new WeakMap<IndexItem, string>();
-function itemText(item: IndexItem): string {
-  let text = textCache.get(item);
-  if (text === undefined) {
-    text = `${item.sku} ${item.title} ${item.familyCode} ${item.familyName} ${item.accessoryType ?? ""} ${item.category}`.toLowerCase();
-    textCache.set(item, text);
+const haystacks = new WeakMap<IndexItem, Haystack>();
+function itemHaystack(item: IndexItem): Haystack {
+  let h = haystacks.get(item);
+  if (!h) {
+    h = haystack([item.sku, item.title, item.familyCode, item.familyName, item.accessoryType, item.category], item.sku, item.keywords);
+    haystacks.set(item, h);
   }
-  return text;
+  return h;
 }
 
 export function runFilters(index: CatalogIndex, state: FilterState): FilterResult {
@@ -187,7 +187,7 @@ export function runFilters(index: CatalogIndex, state: FilterState): FilterResul
 
   const matched: IndexItem[] = [];
   for (const item of items) {
-    if (tokens.length && !matchTokens(itemText(item), compactKey(item.sku), tokens)) continue;
+    if (tokens.length && !matchTokens(itemHaystack(item), tokens)) continue;
     let failed = -1;
     let failures = 0;
     for (const t of tests) {
@@ -222,12 +222,7 @@ export function sortItems(items: IndexItem[], sort: SortKey, tokens: string[] = 
     case "featured": {
       if (!tokens.length) return list.sort(featured);
       const scores = new Map<IndexItem, number>();
-      for (const item of list) {
-        const title = item.title.toLowerCase();
-        let score = skuScore(compactKey(item.sku), tokens);
-        for (const t of tokens) if (title.includes(t)) score += 4;
-        scores.set(item, score);
-      }
+      for (const item of list) scores.set(item, relevance(itemHaystack(item), item.title, tokens));
       return list.sort((a, b) => (scores.get(b) ?? 0) - (scores.get(a) ?? 0) || featured(a, b));
     }
     case "popular":

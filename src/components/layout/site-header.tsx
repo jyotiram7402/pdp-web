@@ -47,7 +47,7 @@ export function SiteHeader({ nav }: { nav: NavData }) {
               Compare
             </Link>
           </nav>
-          <div className="flex flex-1 justify-end md:justify-center lg:px-4">
+          <div className="flex min-w-0 flex-1 justify-end md:justify-center lg:px-4">
             <SearchTrigger />
           </div>
           <HeaderActions />

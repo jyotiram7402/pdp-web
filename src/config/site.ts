@@ -5,7 +5,7 @@ const vercelProductionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
  * tagline and contact details here, and the colors in src/app/globals.css.
  */
 export const siteConfig = {
-  name: "Meridian",
+  name: "ExpertPDP",
   tagline: "Precision access hardware",
   description:
     "Specify, compare and source engineered latches and access hardware — complete specifications, CAD models and compatible accessories for every part.",

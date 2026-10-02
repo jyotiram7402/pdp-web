@@ -4,6 +4,7 @@ import { CatalogPageView } from "@/components/catalog/catalog-page-view";
 import { categoryCrumbs, productsIn } from "@/lib/catalog-core";
 import { getCatalog } from "@/lib/data";
 import { buildIndex } from "@/lib/facets";
+import { pageMetadata } from "@/lib/metadata";
 
 type Props = { params: Promise<{ slug: string[] }> };
 
@@ -17,11 +18,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const node = getCatalog().nodes.get(slug.join("/"));
   if (!node) return {};
-  return {
+  return pageMetadata({
     title: node.names.length > 1 ? `${node.name} · ${node.names[node.names.length - 2]}` : node.name,
     description: node.description || `Browse ${node.count} ${node.name.toLowerCase()} with full specifications, CAD models and compatible accessories.`,
-    alternates: { canonical: node.href },
-  };
+    path: node.href,
+    ogTitle: node.name,
+    images: node.image ? [{ url: node.image, alt: node.name }] : undefined,
+  });
 }
 
 export default async function CategoryPage({ params }: Props) {

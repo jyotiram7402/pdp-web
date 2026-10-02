@@ -10,8 +10,8 @@ export function SiteFooter({ nav }: { nav: NavData }) {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-24 border-t bg-subtle">
-      <Container className="grid gap-12 py-14 md:grid-cols-12">
-        <div className="md:col-span-4">
+      <Container className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12">
+        <div className="lg:col-span-4">
           <Logo />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">{siteConfig.description}</p>
           <ul className="mt-6 space-y-2.5 text-sm text-muted-foreground">
@@ -29,7 +29,7 @@ export function SiteFooter({ nav }: { nav: NavData }) {
           </ul>
         </div>
 
-        <div className="md:col-span-3">
+        <div className="lg:col-span-3">
           <h3 className="text-sm font-semibold text-foreground">Products</h3>
           <ul className="mt-4 space-y-2.5 text-sm">
             {nav.categories.slice(0, 6).map((c) => (
@@ -47,7 +47,7 @@ export function SiteFooter({ nav }: { nav: NavData }) {
           </ul>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="lg:col-span-2">
           <h3 className="text-sm font-semibold text-foreground">Tools</h3>
           <ul className="mt-4 space-y-2.5 text-sm">
             {[
@@ -64,7 +64,7 @@ export function SiteFooter({ nav }: { nav: NavData }) {
           </ul>
         </div>
 
-        <div className="md:col-span-3">
+        <div className="lg:col-span-3">
           <div className="rounded-2xl border bg-background p-5">
             <h3 className="text-sm font-semibold text-foreground">Need help specifying a part?</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">

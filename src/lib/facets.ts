@@ -1,7 +1,7 @@
 import type { CardProduct, Product } from "./types";
 import { AUTO_FACETS, FACETS, HIDDEN_SPECS } from "@/config/facets";
 import { STOCK_LABEL, toNumber } from "./format";
-import { rangeSpec, toCard } from "./product";
+import { rangeSpec, searchKeywords, toCard } from "./product";
 import { collator, slugify, specValue } from "./utils";
 
 /* ---------------------------------------------------------------- config types */
@@ -67,6 +67,8 @@ export interface IndexItem extends CardProduct {
   popularity: number;
   added: number;
   featured: boolean;
+  /** Searchable spec values and certifications. */
+  keywords: string[];
   /** Facet values aligned with `CatalogIndex.facets`. */
   v: FacetCell[];
 }
@@ -270,6 +272,7 @@ export function buildIndex(products: Product[]): CatalogIndex {
     popularity: product.popularity,
     added: product.added ?? 0,
     featured: product.featured,
+    keywords: searchKeywords(product),
     v: columns.map((column) => column[i]),
   }));
 

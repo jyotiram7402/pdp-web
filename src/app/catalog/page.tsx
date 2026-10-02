@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { CatalogPageView } from "@/components/catalog/catalog-page-view";
 import { getCatalog } from "@/lib/data";
 import { buildIndex } from "@/lib/facets";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "All products",
   description: "Browse every part with live filters for fit, material, finish, access restriction, IP rating and compliance.",
-  alternates: { canonical: "/catalog" },
-};
+  path: "/catalog",
+});
 
 export default function CatalogPage() {
   const catalog = getCatalog();

@@ -12,6 +12,8 @@ export interface SearchProduct {
   price: number | null;
   stock: StockStatus;
   accessory: string | null;
+  /** Searchable spec values and certifications. */
+  keywords: string[];
 }
 
 export interface SearchCategory {
@@ -35,26 +37,67 @@ export interface SearchIndex {
   families: SearchFamily[];
 }
 
-export function tokenize(query: string): string[] {
-  return query
+/**
+ * Lowercase, with dashes read as spaces and "&" as "and", so "Self-Adjusting" / "self adjusting"
+ * and "Lift & Turn" / "lift and turn" compare equal.
+ */
+export function normalizeText(value: string): string {
+  return value
     .toLowerCase()
-    .split(/\s+/)
-    .map((t) => t.trim())
-    .filter(Boolean)
-    .slice(0, 8);
+    .replace(/[-\u2010-\u2015]/g, " ")
+    .replace(/&/g, " and ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-/** Every token must appear in the text, or (for part numbers) in the compacted SKU. */
-export function matchTokens(text: string, skuKey: string, tokens: string[]): boolean {
+/** Query words; a dashed word stays one phrase ("e3-15" → "e3 15", which does not match E3-5-15). */
+export function tokenize(query: string): string[] {
+  return query.split(/\s+/).map(normalizeText).filter(Boolean).slice(0, 8);
+}
+
+/** What a query is matched against, prepared once per item. */
+export interface Haystack {
+  /** Normalized fields and keywords. */
+  text: string;
+  /** Compact part number, matched anywhere ("1515" finds E3-15-15). */
+  sku: string;
+  /** Compact keywords, matched from the start ("ip66" finds "IP 66"). */
+  codes: string[];
+}
+
+export function haystack(fields: Array<string | null | undefined>, sku = "", keywords: string[] = []): Haystack {
+  return {
+    text: normalizeText([...fields, ...keywords].filter(Boolean).join(" ")),
+    sku: compactKey(sku),
+    codes: keywords.map(compactKey).filter(Boolean),
+  };
+}
+
+const isWordChar = (char: string) => /[a-z0-9]/.test(char);
+
+/** True when `token` starts a word of `text`: "ip" finds "IP 66" but not "grip", "lock" finds "Key Locking". */
+function startsWord(text: string, token: string): boolean {
+  if (!isWordChar(token[0])) return text.includes(token);
+  for (let i = text.indexOf(token); i !== -1; i = text.indexOf(token, i + 1)) {
+    if (i === 0 || !isWordChar(text[i - 1])) return true;
+  }
+  return false;
+}
+
+/**
+ * Every token must start a word, or match the part number or a keyword with spaces and
+ * punctuation ignored, so "e3 15 15", "E3-15-15", "IP66" and "ip-66" all work.
+ */
+export function matchTokens(h: Haystack, tokens: string[]): boolean {
   return tokens.every((token) => {
-    if (text.includes(token)) return true;
+    if (startsWord(h.text, token)) return true;
     const compact = compactKey(token);
-    return compact.length >= 2 && skuKey.includes(compact);
+    return compact.length >= 2 && (h.sku.includes(compact) || h.codes.some((code) => code.startsWith(compact)));
   });
 }
 
 /** Score boost for part-number matches so "e3-15" ranks E3-15-15 first. */
-export function skuScore(skuKey: string, tokens: string[]): number {
+function skuScore(skuKey: string, tokens: string[]): number {
   const q = compactKey(tokens.join(""));
   if (!q) return 0;
   if (skuKey === q) return 100;
@@ -63,18 +106,31 @@ export function skuScore(skuKey: string, tokens: string[]): number {
   return 0;
 }
 
+/** Ranking of a match: part-number hits first, then query words found in the title. */
+export function relevance(h: Haystack, title: string, tokens: string[]): number {
+  let score = skuScore(h.sku, tokens);
+  const text = normalizeText(title);
+  for (const t of tokens) if (text.includes(t)) score += 4;
+  return score;
+}
+
+const productHaystacks = new WeakMap<SearchProduct, Haystack>();
+function productHaystack(item: SearchProduct): Haystack {
+  let h = productHaystacks.get(item);
+  if (!h) {
+    h = haystack([item.sku, item.title, item.family, item.familyName, item.category, item.accessory], item.sku, item.keywords);
+    productHaystacks.set(item, h);
+  }
+  return h;
+}
+
 export function searchProducts(index: SearchIndex, query: string, limit = 8): { items: SearchProduct[]; total: number } {
   const tokens = tokenize(query);
   if (!tokens.length) return { items: [], total: 0 };
   const scored: Array<{ item: SearchProduct; score: number }> = [];
   for (const item of index.products) {
-    const key = compactKey(item.sku);
-    const text = `${item.sku} ${item.title} ${item.family} ${item.familyName} ${item.category} ${item.accessory ?? ""}`.toLowerCase();
-    if (!matchTokens(text, key, tokens)) continue;
-    let score = skuScore(key, tokens);
-    const title = item.title.toLowerCase();
-    for (const t of tokens) if (title.includes(t)) score += 4;
-    scored.push({ item, score });
+    const h = productHaystack(item);
+    if (matchTokens(h, tokens)) scored.push({ item, score: relevance(h, item.title, tokens) });
   }
   scored.sort((a, b) => b.score - a.score);
   return { items: scored.slice(0, limit).map((s) => s.item), total: scored.length };
@@ -83,13 +139,11 @@ export function searchProducts(index: SearchIndex, query: string, limit = 8): { 
 export function searchCategories(index: SearchIndex, query: string, limit = 3): SearchCategory[] {
   const tokens = tokenize(query);
   if (!tokens.length) return [];
-  return index.categories.filter((c) => tokens.every((t) => c.trail.toLowerCase().includes(t))).slice(0, limit);
+  return index.categories.filter((c) => matchTokens(haystack([c.trail]), tokens)).slice(0, limit);
 }
 
 export function searchFamilies(index: SearchIndex, query: string, limit = 3): SearchFamily[] {
   const tokens = tokenize(query);
   if (!tokens.length) return [];
-  return index.families
-    .filter((f) => matchTokens(`${f.code} ${f.name}`.toLowerCase(), compactKey(f.code), tokens))
-    .slice(0, limit);
+  return index.families.filter((f) => matchTokens(haystack([f.code, f.name], f.code), tokens)).slice(0, limit);
 }

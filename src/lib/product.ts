@@ -1,5 +1,5 @@
 import type { CardProduct, Product } from "./types";
-import { HIGHLIGHT_SPECS } from "@/config/facets";
+import { HIGHLIGHT_SPECS, SEARCH_SPECS } from "@/config/facets";
 import { formatNumber, toNumber } from "./format";
 import { specValue } from "./utils";
 
@@ -37,6 +37,16 @@ export function highlightsFor(product: Product): string[] {
     if (value && value.length <= 28 && !out.includes(value)) out.push(value);
   }
   return out;
+}
+
+/** Spec values and certifications that search should find ("Stainless Steel", "IP 66", "UL"). */
+export function searchKeywords(product: Product): string[] {
+  const out = new Set<string>();
+  for (const name of SEARCH_SPECS) {
+    for (const value of specValue(product, name)?.split(/\s*,\s*/) ?? []) if (value) out.add(value);
+  }
+  for (const certification of product.certifications) out.add(certification);
+  return Array.from(out);
 }
 
 export function toCard(product: Product): CardProduct {

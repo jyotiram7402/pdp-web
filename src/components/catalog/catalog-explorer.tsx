@@ -79,25 +79,27 @@ export function CatalogExplorer({ index }: { index: CatalogIndex }) {
     }
   }, []);
 
-  // The URL is read only through SearchParamsWatcher (one source of truth);
-  // until it has reported once, nothing is written back.
-  useEffect(() => {
-    if (urlRef.current === null) return;
-    const search = toSearch(state, facets);
-    if (search === urlRef.current) return;
-    const timer = window.setTimeout(() => {
-      urlRef.current = search;
-      window.history.replaceState(window.history.state, "", `${pathname}${search}`);
-    }, 250);
-    return () => window.clearTimeout(timer);
-  }, [state, facets, pathname]);
-
   // Filtering a few thousand items takes ~1–15 ms, so it runs synchronously;
   // cards and filter sections are memoized so only what changed re-renders.
   const result = useMemo(() => runFilters(index, state), [index, state]);
   const total = result.items.length;
   const totalPages = Math.max(1, Math.ceil(total / state.perPage));
   const page = Math.min(state.page, totalPages);
+
+  // The URL is read only through SearchParamsWatcher (one source of truth);
+  // until it has reported once, nothing is written back. A page beyond the
+  // last one (old shared link) is written back as the page actually shown.
+  useEffect(() => {
+    if (urlRef.current === null) return;
+    const search = toSearch({ ...state, page }, facets);
+    if (search === urlRef.current) return;
+    const timer = window.setTimeout(() => {
+      urlRef.current = search;
+      window.history.replaceState(window.history.state, "", `${pathname}${search}`);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [state, page, facets, pathname]);
+
   const start = (page - 1) * state.perPage;
   const pageItems = result.items.slice(start, start + state.perPage);
   const activeCount = countActive(state);

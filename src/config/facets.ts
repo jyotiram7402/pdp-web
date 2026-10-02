@@ -59,6 +59,27 @@ export const AUTO_FACETS = { enabled: true, maxOptions: 40, minProducts: 2 };
 /** Specs never turned into automatic filters (still shown in the spec table). */
 export const HIDDEN_SPECS = ["Grip - Minimum (Cam Reversed)", "Grip - Maximum (Cam Reversed)"];
 
+/**
+ * Specs whose values can be searched (search palette and "search within"), in addition to
+ * part number, title, family and certifications — so "IP 66", "stainless" or "key locking" find parts.
+ */
+export const SEARCH_SPECS = [
+  "Material",
+  "Finish",
+  "Color/Appearance",
+  "Access Restriction",
+  "Head Style",
+  "Ingress Protection (IP) Rating",
+  "Installation",
+  "Mounting Style",
+  "Size Series",
+  "Series",
+  "Grip Type",
+  "Handle Style",
+  "Thread or Hole Type",
+  "Compliance Specification",
+];
+
 /** Short spec values shown as chips on product cards. */
 export const HIGHLIGHT_SPECS = ["Material", "Finish", "Access Restriction", "Head Style", "Accessory Type"];
 
